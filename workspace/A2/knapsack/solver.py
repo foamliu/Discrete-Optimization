@@ -6,7 +6,7 @@ from collections import namedtuple
 Item = namedtuple("Item", ['index', 'value', 'weight'])
 
 
-def knapSack(capacity, wt, val, item_count):
+def knapsack_DP(capacity, wt, val, item_count):
     K = [[0 for x in range(capacity + 1)] for x in range(item_count + 1)]
 
     # Build table K[][] in bottom up manner
@@ -19,7 +19,38 @@ def knapSack(capacity, wt, val, item_count):
             else:
                 K[i][w] = K[i - 1][w]
 
-    return K[item_count][capacity]
+    taken = [0] * item_count
+    w = capacity
+    for i in range(item_count, 0, -1):
+        if w >= wt[i - 1] and val[i - 1] + K[i - 1][w - wt[i - 1]] > K[i - 1][w]:
+            w -= wt[i - 1]
+            taken[i - 1] = 1
+
+    return K[item_count][capacity], taken
+
+
+def knapsack_recursive(capacity, wt, val, item_count, taken):
+    # Base Case
+    if item_count == 0 or capacity == 0:
+        return 0
+
+    # If weight of the nth item is more than Knapsack of capacity
+    # W, then this item cannot be included in the optimal solution
+    if (wt[item_count - 1] > capacity):
+        return knapsack_recursive(capacity, wt, val, item_count - 1, taken)
+
+        # return the maximum of two cases:
+    # (1) nth item included
+    # (2) not included
+    else:
+        value_included = val[item_count - 1] + knapsack_recursive(capacity - wt[item_count - 1], wt, val,
+                                                                  item_count - 1, taken)
+        value_not_included = knapsack_recursive(capacity, wt, val, item_count - 1, taken)
+        if value_included > value_not_included:
+            taken[item_count - 1] = 1
+            return value_included
+        else:
+            return value_not_included
 
 
 def solve_it(input_data):
@@ -43,9 +74,12 @@ def solve_it(input_data):
         val.append(int(parts[0]))
         wt.append(int(parts[1]))
 
-    taken = [0] * len(items)
-    value = knapSack(capacity, wt, val, item_count)
-    print(value)
+    # value, taken = knapsack_DP(capacity, wt, val, item_count)
+    taken = [0] * item_count
+    value = knapsack_recursive(capacity, wt, val, item_count, taken)
+
+    # print(value)
+    # print(taken)
 
     # a trivial greedy algorithm for filling the knapsack
     # it takes items in-order until the knapsack is full
@@ -61,19 +95,19 @@ def solve_it(input_data):
 
     # prepare the solution in the specified output format
     output_data = str(value) + ' ' + str(0) + '\n'
-    # output_data += ' '.join(map(str, taken))
+    output_data += ' '.join(map(str, taken))
     return output_data
 
 
 if __name__ == '__main__':
     import sys
 
-    # if len(sys.argv) > 1:
-    #     file_location = sys.argv[1].strip()
-    file_location = 'data/ks_4_0'
-    with open(file_location, 'r') as input_data_file:
-        input_data = input_data_file.read()
-    print(solve_it(input_data))
-    # else:
-    #     print(
-    #         'This test requires an input file.  Please select one from the data directory. (i.e. python solver.py ./data/ks_4_0)')
+    if len(sys.argv) > 1:
+        file_location = sys.argv[1].strip()
+        # file_location = 'data/ks_19_0'
+        with open(file_location, 'r') as input_data_file:
+            input_data = input_data_file.read()
+        print(solve_it(input_data))
+    else:
+        print(
+            'This test requires an input file.  Please select one from the data directory. (i.e. python solver.py ./data/ks_4_0)')
