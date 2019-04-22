@@ -53,6 +53,20 @@ def knapsack_recursive(capacity, wt, val, item_count, taken):
             return value_not_included
 
 
+def knapsack_ratio(capacity, wt, val, item_count):
+    ratios = [(index, val[index] / float(wt[index])) for index in range(item_count)]
+    ratios = sorted(ratios, key=lambda x: x[1], reverse=True)
+    taken = [0] * item_count
+    best_cost = 0
+    weight = 0
+    for index, ratio in ratios:
+        if wt[index] + weight <= capacity:
+            weight += wt[index]
+            best_cost += val[index]
+            taken[index] = 1
+    return best_cost, taken
+
+
 def solve_it(input_data):
     # Modify this code to run your optimization algorithm
 
@@ -75,8 +89,13 @@ def solve_it(input_data):
         wt.append(int(parts[1]))
 
     # value, taken = knapsack_DP(capacity, wt, val, item_count)
-    taken = [0] * item_count
-    value = knapsack_recursive(capacity, wt, val, item_count, taken)
+    # taken = [0] * item_count
+    # value = knapsack_recursive(capacity, wt, val, item_count, taken)
+
+    if item_count < 100:
+        value, taken = knapsack_DP(capacity, wt, val, item_count)
+    else:
+        value, taken = knapsack_ratio(capacity, wt, val, item_count)
 
     # print(value)
     # print(taken)
