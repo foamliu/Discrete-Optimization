@@ -28,7 +28,7 @@
 #
 #     return output_data
 
-nc_dict = {50: 8, 70: 20, 100: 16, 250: 95}
+nc_dict = {50: 8, 70: 20, 100: 16, 250: 95, 500: 18}
 
 
 def add_neighbour(graph, n0, n1):
@@ -115,11 +115,14 @@ def solve(nc, n, num_edges, E):
     # objective (minimize the number of colors)
     model.Minimize(max_color)
 
-    solver.parameters.max_time_in_seconds = 10.0
+    # if n > 100:
+    #     solver.parameters.max_time_in_seconds = 10.0
     status = solver.Solve(model)
 
     if status == cp_model.OPTIMAL:
         solution = [solver.Value(x[i]) for i in V]
+
+    # solution = [solver.Value(x[i]) for i in V]
 
     obj = max(solution) + 1
     output_data = str(obj) + ' ' + str(1) + '\n'
@@ -155,7 +158,7 @@ def solve_it(input_data):
     node_count = int(first_line[0])
     edge_count = int(first_line[1])
 
-    if node_count <= 100:
+    if node_count <= 500:
         return ortools_solve(input_data)
     else:
         return welsh_powell(input_data)
